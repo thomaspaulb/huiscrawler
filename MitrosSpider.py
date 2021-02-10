@@ -17,13 +17,26 @@ class MitrosSpider(BaseSpider):
         for card in cards:
             address = card.css("div.card__inner h5 strong::text").get().lower()
             state = card.css("div.card__overlay h6 strong::text").get().lower()
+            price_text = card.css("div.card__overlay p::text").get()
+            price = int(''.join(i for i in price_text if i.isdigit()))
+            m2_text = card.css("div.card__inner small::text").get()
+            m2 = int(''.join(i for i in m2_text if i.isdigit()))
             href = card.css("a::attr(href)").get()
-            if state in ['te koop', 'koopvoorrang']:
-                yield {
-                    'address': address,
-                    'state': state,
-                    'link': href,
-                }
+            if state == 'verkocht':
+                continue
+            if price < 225000 or price > 450000:
+                continue
+            if m2 <= 60:
+                continue
+            if not 'wetering' in address and not 'pijlsweer' in address:
+                continue
+            yield {
+                'address': address,
+                'state': state,
+                'link': href,
+                'price': price,
+                'm2': m2,
+            }
 
         # If we are not at the last page, go to the next.
         if page < pages:
